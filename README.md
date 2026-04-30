@@ -1,1 +1,2 @@
 # 254Circuit_AI_Project
+We mainly communicated through a google doc and text messages for this project. I worked on the code, which is in this workspace. This project uses arduino circuit, python, and an AI model to recognize a book by it's cover (front or back) and gives a recommendation based on the mood which is given via the potentiometer. The amount of lights lit tells you how many recommendations there are. Finally, the button starts the recording from the camera.
