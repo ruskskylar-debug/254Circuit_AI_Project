@@ -1,0 +1,50 @@
+#define LED1 8
+#define LED2 9
+#define LED3 10
+#define BUTTON_PIN 2
+#define POT_PIN A0
+
+
+void setup() {
+  Serial.begin(9600);
+
+
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+
+
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+}
+
+
+void loop() {
+
+
+  int pot = analogRead(POT_PIN);
+
+
+  int mood;
+  if (pot < 341) mood = 0;
+  else if (pot < 682) mood = 1;
+  else mood = 2;
+
+
+  if (digitalRead(BUTTON_PIN) == LOW) {
+    Serial.println(mood);
+    delay(300);
+  }
+
+
+  if (Serial.available() > 0) {
+
+
+    int r = Serial.parseInt();
+
+
+    digitalWrite(LED1, r >= 1);
+    digitalWrite(LED2, r >= 2);
+    digitalWrite(LED3, r >= 3);
+  }
+}
+
