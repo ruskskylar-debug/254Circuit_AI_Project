@@ -1,0 +1,134 @@
+import cv2
+import serial
+import time
+import numpy as np
+import tensorflow as tf
+
+
+print("Starting full system...")
+
+
+
+
+arduino = serial.Serial('COM7', 9600)
+time.sleep(2)
+arduino.reset_input_buffer()
+
+
+print("Arduino connected")
+
+
+
+
+cap = cv2.VideoCapture(0)
+
+
+if not cap.isOpened():
+    print("Camera failed")
+    exit()
+
+
+print("Camera opened")
+
+
+
+
+interpreter = tf.lite.Interpreter(model_path="model.tflite")
+interpreter.allocate_tensors()
+
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+
+labels = ["Hunger Games", "Percy Jackson"]
+
+
+def predict_book(frame):
+
+
+    img = cv2.resize(frame, (224, 224))
+    img = np.asarray(img).astype(np.float32)
+    img = (img / 127.5) - 1
+    img = np.expand_dims(img, axis=0)
+
+
+    interpreter.set_tensor(input_details[0]['index'], img)
+    interpreter.invoke()
+
+
+    output = interpreter.get_tensor(output_details[0]['index'])
+
+
+    return labels[np.argmax(output)]
+
+
+def recommend(book, mood):
+
+
+    if book == "Hunger Games":
+        if mood == 0:
+            return 1
+        elif mood == 1:
+            return 2
+        else:
+            return 3
+
+
+    if book == "Percy Jackson":
+        if mood == 0:
+            return 1
+        elif mood == 1:
+            return 2
+        else:
+            return 3
+
+
+    return 1
+
+
+
+
+mood = None
+
+
+while True:
+
+
+    ret, frame = cap.read()
+    if ret:
+        cv2.imshow("Camera", frame)
+
+
+   
+    if arduino.in_waiting > 0:
+        line = arduino.readline().decode(errors="ignore").strip()
+
+
+        if line.isdigit():
+            mood = int(line)
+            print("Mood:", mood)
+
+
+           
+            book = predict_book(frame)
+            print("Book:", book)
+
+
+           
+            result = recommend(book, mood)
+            print("Sending:", result)
+
+
+            arduino.write(f"{result}\n".encode())
+
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+
+cap.release()
+cv2.destroyAllWindows()
+arduino.close()
+
+
